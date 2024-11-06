@@ -6,10 +6,14 @@ import "izitoast/dist/css/iziToast.min.css";
 const form = document.querySelector("form");
 const gallery = document.querySelector(".gallery");
 const loader = document.querySelector(".loader");
+const loadMoreButton = document.querySelector(".load-more");
+
+let query = "";
+let page = 1;
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  const query = event.target.elements.query.value.trim();
+  query = event.target.elements.query.value.trim();
 
   if (!query) {
     iziToast.warning({ message: "Please enter a search term." });
@@ -18,19 +22,32 @@ form.addEventListener("submit", (event) => {
 
   loader.classList.add("show");
   gallery.innerHTML = "";
+  loadMoreButton.style.display = "none";
+  page = 1;
 
-  fetchImages(query)
-   .then((images) => {
-      loader.classList.remove("show");
-      if (images.length > 0) {
-         renderGallery(images, gallery);
-      } else {
-         iziToast.error({ message: "Sorry, there are no images matching your search query. Please try again!" });
-      }
-   })
-   .catch((error) => {
-      loader.classList.remove("show");
-      console.error("Error fetching images:", error.message);
-      iziToast.error({ message: `An error occurred: ${error.message}. Please try again later.` });
-   });
+  fetchAndRenderImages();
 });
+
+loadMoreButton.addEventListener("click", () => {
+  loadMoreButton.style.display = "none";
+  loader.classList.add("show");
+  page += 1;
+  fetchAndRenderImages();
+});
+
+async function fetchAndRenderImages() {
+  try {
+    const images = await fetchImages(query, page);
+    loader.classList.remove("show");
+
+    if (images.length > 0) {
+      renderGallery(images, gallery);
+      loadMoreButton.style.display = "block";
+    } else if (page === 1) {
+      iziToast.error({ message: "Sorry, there are no images matching your search query." });
+    }
+  } catch (error) {
+    loader.classList.remove("show");
+    iziToast.error({ message: `An error occurred: ${error.message}. Please try again later.` });
+  }
+}
