@@ -1,6 +1,8 @@
-export const fetchImages = (query) => {
+import axios from "axios";
+
+export const fetchImages = async (query, page = 1, perPage = 15) => {
   const API_KEY = "46849808-268f228f7185f073a2d253586";
- const params = new URLSearchParams({
+  const params = new URLSearchParams({
     key: API_KEY,
     q: query,
     image_type: "photo",
@@ -8,20 +10,14 @@ export const fetchImages = (query) => {
     safesearch: "true",
   });
 
-  const URL = `https://pixabay.com/api/?${params.toString()}`;
+  const URL = "https://pixabay.com/api/";
 
-  return fetch(URL)
-      .then(response => {
-        console.log(response);
-        
-      if (!response.ok) {
-        throw new Error(response.statusText);  
-      }
-      return response.json();
-    })
-    .then(data => data.hits)
-    .catch(error => {
-      console.error("Error fetching data:", error);
-      return [];
-    });
+  try {
+    const response = await axios.get(URL, {params});
+    console.log(response);
+    return response.data.hits;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return [];
+  }
 };
