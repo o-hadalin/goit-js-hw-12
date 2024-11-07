@@ -41,23 +41,19 @@ async function fetchAndRenderImages() {
     const images = await fetchImages(query, page);
     loader.classList.remove("show");
 
-    if (page === 1) {
-      totalHits = images.totalHits;
-    }
+    if (page === 1) totalHits = images.totalHits;
 
     if (images.hits.length > 0) {
       renderGallery(images.hits, gallery);
-
       if (page * 15 >= totalHits) {
         iziToast.info({ message: "We're sorry, but you've reached the end of search results." });
+        loadMoreButton.style.display = "none";
       } else {
         loadMoreButton.style.display = "block";
       }
 
       if (page > 1) {
-        const firstCard = gallery.querySelector(".gallery a");
-        const cardHeight = firstCard ? firstCard.getBoundingClientRect().height : 0;
-
+        const cardHeight = gallery.querySelector(".gallery a")?.getBoundingClientRect().height || 0;
         smoothScroll(cardHeight * 2, 1000);
       }
     } else if (page === 1) {
@@ -72,16 +68,18 @@ async function fetchAndRenderImages() {
 function smoothScroll(distance, duration) {
   const start = window.scrollY;
   const end = start + distance;
-  const step = distance / (duration / 10);
+  const startTime = performance.now();
 
-  let currentScroll = start;
+  function animateScroll(currentTime) {
+    const elapsedTime = currentTime - startTime;
+    const progress = Math.min(elapsedTime / duration, 1);
+    const scrollStep = (distance * progress) - (window.scrollY - start);
+    window.scrollBy(0, scrollStep);
 
-  const interval = setInterval(() => {
-    currentScroll += step;
-    window.scrollBy(0, step);
-
-    if ((step > 0 && currentScroll >= end) || (step < 0 && currentScroll <= end)) {
-      clearInterval(interval);
+    if (progress < 1) {
+      requestAnimationFrame(animateScroll);
     }
-  }, 10);
+  }
+
+  requestAnimationFrame(animateScroll);
 }
