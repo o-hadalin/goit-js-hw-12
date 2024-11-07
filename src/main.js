@@ -57,9 +57,10 @@ async function fetchAndRenderImages() {
       if (page > 1) {
         const firstCard = gallery.querySelector(".gallery a");
         const cardHeight = firstCard ? firstCard.getBoundingClientRect().height : 0;
-        const scrollDistance = cardHeight * 2;
+        const rowGap = parseFloat(getComputedStyle(gallery).gap) || 0;
+        const scrollDistance = (cardHeight + rowGap) * 2;
 
-        smoothScroll(scrollDistance);
+        scrollBySmooth(scrollDistance, 1000);
       }
     } else if (page === 1) {
       iziToast.error({ message: "Sorry, there are no images matching your search query." });
@@ -70,21 +71,21 @@ async function fetchAndRenderImages() {
   }
 }
 
-function smoothScroll(distance, duration = 1000) {
+function scrollBySmooth(distance, duration) {
   const start = window.scrollY;
-  const end = start + distance;
-  const startTime = performance.now();
+  let startTime = null;
 
-  function scroll() {
-    const now = performance.now();
-    const timeElapsed = now - startTime;
+  function animation(currentTime) {
+    if (!startTime) startTime = currentTime;
+    const timeElapsed = currentTime - startTime;
     const progress = Math.min(timeElapsed / duration, 1);
-    window.scrollTo(0, start + (end - start) * progress);
+    
+    window.scrollTo(0, start + distance * progress);
 
     if (progress < 1) {
-      requestAnimationFrame(scroll);
+      requestAnimationFrame(animation);
     }
   }
 
-  requestAnimationFrame(scroll);
+  requestAnimationFrame(animation);
 }
