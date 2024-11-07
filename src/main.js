@@ -58,7 +58,7 @@ async function fetchAndRenderImages() {
         const firstCard = gallery.querySelector(".gallery a");
         const cardHeight = firstCard ? firstCard.getBoundingClientRect().height : 0;
 
-        smoothScroll(cardHeight * 2, 1000);
+        smoothScroll(cardHeight * 2, 2000);
       }
     } else if (page === 1) {
       iziToast.error({ message: "Sorry, there are no images matching your search query." });
