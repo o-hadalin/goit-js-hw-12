@@ -10,6 +10,7 @@ const loadMoreButton = document.querySelector(".load-more");
 
 let query = "";
 let page = 1;
+let totalHits = 0;
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -40,9 +41,18 @@ async function fetchAndRenderImages() {
     const images = await fetchImages(query, page);
     loader.classList.remove("show");
 
-    if (images.length > 0) {
-      renderGallery(images, gallery);
-      loadMoreButton.style.display = "block";
+    if (page === 1) {
+      totalHits = images.totalHits;
+    }
+
+       if (images.hits.length > 0) {
+      renderGallery(images.hits, gallery);
+
+         if (page * 15 >= totalHits) {
+        iziToast.info({ message: "We're sorry, but you've reached the end of search results." });
+      } else {
+        loadMoreButton.style.display = "block";
+      }
     } else if (page === 1) {
       iziToast.error({ message: "Sorry, there are no images matching your search query." });
     }
