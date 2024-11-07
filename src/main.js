@@ -53,11 +53,13 @@ async function fetchAndRenderImages() {
       } else {
         loadMoreButton.style.display = "block";
       }
-      
+
       if (page > 1) {
         const firstCard = gallery.querySelector(".gallery a");
         const cardHeight = firstCard ? firstCard.getBoundingClientRect().height : 0;
-        window.scrollBy({ top: cardHeight * 2, behavior: "smooth" });
+        const scrollDistance = cardHeight * 2;
+
+        smoothScroll(scrollDistance);
       }
     } else if (page === 1) {
       iziToast.error({ message: "Sorry, there are no images matching your search query." });
@@ -66,4 +68,23 @@ async function fetchAndRenderImages() {
     loader.classList.remove("show");
     iziToast.error({ message: `An error occurred: ${error.message}. Please try again later.` });
   }
+}
+
+function smoothScroll(distance, duration = 1000) {
+  const start = window.scrollY;
+  const end = start + distance;
+  const startTime = performance.now();
+
+  function scroll() {
+    const now = performance.now();
+    const timeElapsed = now - startTime;
+    const progress = Math.min(timeElapsed / duration, 1);
+    window.scrollTo(0, start + (end - start) * progress);
+
+    if (progress < 1) {
+      requestAnimationFrame(scroll);
+    }
+  }
+
+  requestAnimationFrame(scroll);
 }
