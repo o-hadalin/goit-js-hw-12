@@ -12,11 +12,6 @@ let query = "";
 let page = 1;
 let totalHits = 0;
 
-function toggleLoadingState(isLoading) {
-  loader.classList.toggle("show", isLoading);
-  loadMoreButton.style.display = isLoading ? "none" : "block";
-}
-
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   query = event.target.elements.query.value.trim();
@@ -26,43 +21,67 @@ form.addEventListener("submit", (event) => {
     return;
   }
 
+  loader.classList.add("show");
   gallery.innerHTML = "";
+  loadMoreButton.style.display = "none";
   page = 1;
-  toggleLoadingState(true);
+
   fetchAndRenderImages();
 });
 
 loadMoreButton.addEventListener("click", () => {
+  loadMoreButton.style.display = "none";
+  loader.classList.add("show");
   page += 1;
-  toggleLoadingState(true);
   fetchAndRenderImages();
 });
 
 async function fetchAndRenderImages() {
   try {
     const images = await fetchImages(query, page);
-    toggleLoadingState(false);
+    loader.classList.remove("show");
 
-    if (page === 1) totalHits = images.totalHits;
+    if (page === 1) {
+      totalHits = images.totalHits;
+    }
 
     if (images.hits.length > 0) {
       renderGallery(images.hits, gallery);
 
-      loadMoreButton.style.display = (page * 15 < totalHits) ? "block" : "none";
       if (page * 15 >= totalHits) {
         iziToast.info({ message: "We're sorry, but you've reached the end of search results." });
+      } else {
+        loadMoreButton.style.display = "block";
       }
 
       if (page > 1) {
-        const card = gallery.querySelector(".gallery a");
-        const cardHeight = card ? card.getBoundingClientRect().height : 0;
-        window.scrollBy({ top: cardHeight * 2, behavior: "smooth" });
+        const firstCard = gallery.querySelector(".gallery a");
+        const cardHeight = firstCard ? firstCard.getBoundingClientRect().height : 0;
+
+        smoothScroll(cardHeight * 2, 1000);
       }
     } else if (page === 1) {
       iziToast.error({ message: "Sorry, there are no images matching your search query." });
     }
   } catch (error) {
-    toggleLoadingState(false);
+    loader.classList.remove("show");
     iziToast.error({ message: `An error occurred: ${error.message}. Please try again later.` });
   }
+}
+
+function smoothScroll(distance, duration) {
+  const start = window.scrollY;
+  const end = start + distance;
+  const step = distance / (duration / 10);
+
+  let currentScroll = start;
+
+  const interval = setInterval(() => {
+    currentScroll += step;
+    window.scrollBy(0, step);
+
+    if ((step > 0 && currentScroll >= end) || (step < 0 && currentScroll <= end)) {
+      clearInterval(interval);
+    }
+  }, 10);
 }
