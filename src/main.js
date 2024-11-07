@@ -45,13 +45,19 @@ async function fetchAndRenderImages() {
       totalHits = images.totalHits;
     }
 
-       if (images.hits.length > 0) {
+    if (images.hits.length > 0) {
       renderGallery(images.hits, gallery);
 
-         if (page * 15 >= totalHits) {
+      if (page * 15 >= totalHits) {
         iziToast.info({ message: "We're sorry, but you've reached the end of search results." });
       } else {
         loadMoreButton.style.display = "block";
+      }
+      
+      if (page > 1) {
+        const firstCard = gallery.querySelector(".gallery a");
+        const cardHeight = firstCard ? firstCard.getBoundingClientRect().height : 0;
+        window.scrollBy({ top: cardHeight * 2, behavior: "smooth" });
       }
     } else if (page === 1) {
       iziToast.error({ message: "Sorry, there are no images matching your search query." });
