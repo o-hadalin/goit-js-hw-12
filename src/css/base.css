@@ -98,6 +98,8 @@ main {
   flex-direction: row;
   justify-content: space-around;
   padding: 8px;
+  border-left-width: 0;
+  border-bottom-width: 0;
 }
 
 .info-row {

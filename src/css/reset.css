@@ -30,7 +30,7 @@ a {
   text-align: center;
   font-weight: bold;
   text-decoration: underline;
-  padding-bottom: 10px;
+  /* padding-bottom: 10px; */
   display: block;
   width: max-content;
 }
